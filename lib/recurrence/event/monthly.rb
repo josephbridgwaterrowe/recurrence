@@ -24,6 +24,8 @@ module SimplesIdeias
             end
 
             @options[:weekday] = valid_weekday_or_weekday_name?(@options[:weekday])
+          elsif @options.key?(:businessday)
+
           else
             valid_month_day?(@options[:on])
           end
@@ -36,7 +38,14 @@ module SimplesIdeias
 
         def next_in_recurrence
           return next_month if self.respond_to?(:next_month)
-          type = @options.key?(:weekday) ? :weekday : :monthday
+          if @options.key?(:weekday)
+            type = :weekday
+          elsif @options.key?(:businessday)
+            type = :businessday
+          else
+            type = :monthday
+          end
+          #type = @options.key?(:weekday) ? :weekday : :monthday
 
           class_eval <<-METHOD
             def next_month
@@ -51,6 +60,48 @@ module SimplesIdeias
           METHOD
 
           next_month
+        end
+
+
+        def advance_to_month_by_businessday(date, interval=@options[:interval])
+          # Have a raw month from 0 to 11 interval
+          raw_month  = date.month + interval - 1
+          next_year  = date.year + raw_month / 12
+          next_month = (raw_month % 12) + 1 # change back to ruby interval
+          date       = Date.new(next_year, next_month, 1)
+
+          #puts "advance_to_month_by_businessday, date: #{date}"
+          #puts "advance_to_month_by_businessday, options: #{@options.to_yaml}"
+          #puts "advance_to_month_by_businessday, begin: #{date.at_beginning_of_month}, end: #{date.end_of_month}"
+
+          business_day = 0
+          found_date = date
+
+          if @options[:businessday] > 0
+            date.at_beginning_of_month.upto(date.end_of_month) do |scan_date|
+              #puts "advance_to_month_by_businessday, scan date: #{scan_date}"
+              business_day += 1 unless scan_date.saturday? || scan_date.sunday?
+              #puts "advance_to_month_by_businessday, business_day: #{business_day}"
+
+              if business_day ==  @options[:businessday]
+                found_date = scan_date
+                break
+              end
+            end
+          else
+            date.end_of_month.downto(date.at_beginning_of_month) do |scan_date|
+              business_day += 1 unless scan_date.saturday? || scan_date.sunday?
+
+              if -business_day ==  @options[:businessday]
+                found_date = scan_date
+                break
+              end
+            end
+          end
+
+          #puts "after scan date is #{found_date}"
+
+          @options[:handler].call(found_date.day, date.month, date.year)
         end
 
         def advance_to_month_by_monthday(date, interval=@options[:interval])

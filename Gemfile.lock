@@ -27,4 +27,4 @@ PLATFORMS
 DEPENDENCIES
   rake (~> 0.9)
   recurrence!
-  rspec (~> 2.6)
+  rspec

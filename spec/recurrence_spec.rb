@@ -441,6 +441,94 @@ describe Recurrence do
       end
     end
 
+
+
+
+    context 'using businessday' do
+
+      it 'should start first business day of january 2013' do
+        date = Date.new(2013,1,1)
+
+        @recurrence = Recurrence.monthly(businessday: 1, :starts => date.to_date, until: date + 1.month)
+        @recurrence.events[0].should == Date.new(2013,1,1)
+        @recurrence.events[0].tuesday?.should eq true
+      end
+
+      it 'should start first business day of february 2013' do
+        date = Date.new(2013,2,1)
+
+        @recurrence = Recurrence.monthly(businessday: 1, :starts => date.to_date, until: date + 1.month)
+        @recurrence.events[0].should == Date.new(2013,2,1)
+        @recurrence.events[0].friday?.should eq true
+      end
+
+      it 'should start second business day of february 2013' do
+        date = Date.new(2013,2,1)
+
+        @recurrence = Recurrence.monthly(businessday: 2, :starts => date.to_date, until: date + 1.month)
+        @recurrence.events[0].should == Date.new(2013,2,4)
+        @recurrence.events[0].monday?.should eq true
+      end
+
+      it 'should start last business day of january 2013' do
+        date = Date.new(2013,1,1)
+
+        @recurrence = Recurrence.monthly(businessday: -1, :starts => date.to_date, until: date + 1.month)
+        @recurrence.events[0].should == Date.new(2013,1,31)
+        @recurrence.events[0].thursday?.should eq true
+      end
+
+      it 'should start second from last business day of january 2013' do
+        date = Date.new(2013,1,1)
+
+        @recurrence = Recurrence.monthly(businessday: -2, :starts => date.to_date, until: date + 1.month)
+        @recurrence.events[0].should == Date.new(2013,1,30)
+        @recurrence.events[0].wednesday?.should eq true
+      end
+
+
+      it 'should start third from last business day of april 2013' do
+        date = Date.new(2013,4,1)
+
+        @recurrence = Recurrence.monthly(businessday: -3, :starts => date.to_date, until: date + 1.month)
+        @recurrence.events[0].should == Date.new(2013,4,26)
+        @recurrence.events[0].friday?.should eq true
+      end
+
+      it 'should occur several times per year' do
+        starts = Date.new(2013,1,1)
+
+        @recurrence = Recurrence.monthly(businessday: 1, :starts => starts.to_date, until: starts + 1.year)
+        @recurrence.events[0].should == Date.new(2013,1,1)
+        @recurrence.events[0].tuesday?.should eq true
+        @recurrence.events[1].should == Date.new(2013,2,1)
+        @recurrence.events[1].friday?.should eq true
+        @recurrence.events[2].should == Date.new(2013,3,1)
+        @recurrence.events[2].friday?.should eq true
+        @recurrence.events[3].should == Date.new(2013,4,1)
+        @recurrence.events[3].monday?.should eq true
+        @recurrence.events[4].should == Date.new(2013,5,1)
+        @recurrence.events[4].wednesday?.should eq true
+        @recurrence.events[5].should == Date.new(2013,6,3)
+        @recurrence.events[5].monday?.should eq true
+        @recurrence.events[6].should == Date.new(2013,7,1)
+        @recurrence.events[6].monday?.should eq true
+        @recurrence.events[7].should == Date.new(2013,8,1)
+        @recurrence.events[7].thursday?.should eq true
+        @recurrence.events[8].should == Date.new(2013,9,2)
+        @recurrence.events[8].monday?.should eq true
+        @recurrence.events[9].should == Date.new(2013,10,1)
+        @recurrence.events[9].tuesday?.should eq true
+        @recurrence.events[10].should == Date.new(2013,11,1)
+        @recurrence.events[10].friday?.should eq true
+        @recurrence.events[11].should == Date.new(2013,12,2)
+        @recurrence.events[11].monday?.should eq true
+      end
+
+    end
+
+
+
     context "using weekday" do
       it "should recur until limit date" do
         @recurrence = Recurrence.daily(:on => 5, :weekday => :thursday)
